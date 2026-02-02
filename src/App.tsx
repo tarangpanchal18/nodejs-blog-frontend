@@ -1,11 +1,11 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RateLimitProvider } from "@/contexts/RateLimitContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Bounce, Slide, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 import BlogDetail from "./pages/BlogDetail";
 import Login from "./pages/Login";
@@ -21,8 +21,19 @@ const App = () => (
     <AuthProvider>
       <RateLimitProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
+          <ToastContainer
+            position="bottom-center"
+            autoClose={3500}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+            transition={Slide}
+            />
           <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />

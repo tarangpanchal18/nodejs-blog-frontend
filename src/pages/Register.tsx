@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-toastify';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
@@ -27,7 +27,6 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -39,7 +38,10 @@ export default function Register() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    if (isLoading) return; // Prevent multiple submissions
+    
     setIsLoading(true);
+    toast.dismiss(); // Clear any existing toasts
 
     const response = await authApi.register({
       name: data.name,
@@ -48,19 +50,12 @@ export default function Register() {
     });
 
     if (response.error) {
-      toast({
-        title: 'Registration failed',
-        description: response.error,
-        variant: 'destructive',
-      });
+      toast.error(response.error);
       setIsLoading(false);
       return;
     }
 
-    toast({
-      title: 'Account created!',
-      description: 'Please sign in with your new account.',
-    });
+    toast.success('Account created! Please sign in with your new account.');
     navigate('/login');
     setIsLoading(false);
   };

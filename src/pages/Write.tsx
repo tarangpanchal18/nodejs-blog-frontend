@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-toastify';
 import { Eye, EyeOff, Send, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -35,7 +35,6 @@ export default function Write() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-  const { toast } = useToast();
   const hasPopulatedForm = useRef(false);
 
   // Fetch blog data if in edit mode
@@ -74,48 +73,32 @@ export default function Write() {
   const descriptionError = description.trim().length > 0 && description.trim().length < MIN_DESCRIPTION_LENGTH;
 
   const handlePublish = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
+    toast.dismiss(); // Clear any existing toasts
+    
     if (!title.trim()) {
-      toast({
-        title: 'Title required',
-        description: 'Please add a title for your blog post.',
-        variant: 'destructive',
-      });
+      toast.error('Please add a title for your blog post.');
       return;
     }
 
     if (title.trim().length < MIN_TITLE_LENGTH) {
-      toast({
-        title: 'Title too short',
-        description: `Title must be at least ${MIN_TITLE_LENGTH} characters long.`,
-        variant: 'destructive',
-      });
+      toast.error(`Title must be at least ${MIN_TITLE_LENGTH} characters long.`);
       return;
     }
 
     if (!description.trim()) {
-      toast({
-        title: 'Description required',
-        description: 'Please add a description for your blog post.',
-        variant: 'destructive',
-      });
+      toast.error('Please add a description for your blog post.');
       return;
     }
 
     if (description.trim().length < MIN_DESCRIPTION_LENGTH) {
-      toast({
-        title: 'Description too short',
-        description: `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`,
-        variant: 'destructive',
-      });
+      toast.error(`Description must be at least ${MIN_DESCRIPTION_LENGTH} characters long.`);
       return;
     }
 
     if (!content.trim()) {
-      toast({
-        title: 'Content required',
-        description: 'Please add some content to your blog post.',
-        variant: 'destructive',
-      });
+      toast.error('Please add some content to your blog post.');
       return;
     }
 
@@ -133,19 +116,12 @@ export default function Write() {
       });
 
       if (response.error) {
-        toast({
-          title: 'Failed to update',
-          description: response.error,
-          variant: 'destructive',
-        });
+        toast.error(response.error);
         setIsSubmitting(false);
         return;
       }
 
-      toast({
-        title: 'Updated!',
-        description: 'Your blog post has been updated.',
-      });
+      toast.success('Your blog post has been updated.');
 
       if (response.data) {
         navigate(`/blog/${response.data.slug}`);
@@ -164,21 +140,16 @@ export default function Write() {
       });
 
       if (response.error) {
-        toast({
-          title: 'Failed to publish',
-          description: response.error,
-          variant: 'destructive',
-        });
+        toast.error(response.error);
         setIsSubmitting(false);
         return;
       }
 
-      toast({
-        title: status === 'published' ? 'Submitted for Review!' : 'Saved as draft!',
-        description: status === 'published' 
-          ? 'Your blog post has been submitted for moderation and will be published after approval.' 
-          : 'Your blog post has been saved as draft.',
-      });
+      if (status === 'published') {
+        toast.success('Submitted for Review! Your blog post has been submitted for moderation and will be published after approval.');
+      } else {
+        toast.success('Saved as draft! Your blog post has been saved as draft.');
+      }
 
       if (response.data) {
         navigate(`/blog/${response.data.slug}`);

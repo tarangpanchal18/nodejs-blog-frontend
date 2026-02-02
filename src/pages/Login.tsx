@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-toastify';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -29,7 +29,6 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const { toast } = useToast();
 
   const from = (location.state as any)?.from?.pathname || '/';
 
@@ -42,7 +41,10 @@ export default function Login() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    if (isLoading) return; // Prevent multiple submissions
+    
     setIsLoading(true);
+    toast.dismiss(); // Clear any existing toasts
 
     const response = await authApi.login({
       email: data.email,
@@ -50,21 +52,14 @@ export default function Login() {
     });
 
     if (response.error) {
-      toast({
-        title: 'Login failed',
-        description: response.error,
-        variant: 'destructive',
-      });
+      toast.error(response.error);
       setIsLoading(false);
       return;
     }
 
     if (response.data) {
       login(response.data.token, response.data.user);
-      toast({
-        title: 'Welcome back!',
-        description: `Signed in as ${response.data.user.name}`,
-      });
+      toast.success(`Welcome back ${response.data.user.name}!`);
       navigate(from, { replace: true });
     }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { blogApi } from '@/lib/api';
@@ -14,7 +14,7 @@ interface TagInputProps {
 
 const MAX_TAGS = 5;
 
-export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags = MAX_TAGS }: TagInputProps) {
+export function TagInput({ value, onChange, placeholder = 'Type to search or create tags (press Enter, comma, or space)', maxTags = MAX_TAGS }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -34,8 +34,14 @@ export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags
       if (response.data) {
         const filtered = response.data.filter((tag) => !value.includes(tag));
         setSuggestions(filtered);
-        // Show suggestions if there are any and input is focused
-        if (filtered.length > 0 && document.activeElement === inputRef.current) {
+        // Always show dropdown when there's input (for existing tags or create new)
+        if (document.activeElement === inputRef.current) {
+          setShowSuggestions(true);
+        }
+      } else {
+        // Even if API fails, show the create new tag option
+        setSuggestions([]);
+        if (document.activeElement === inputRef.current) {
           setShowSuggestions(true);
         }
       }
@@ -68,21 +74,32 @@ export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
       e.preventDefault();
       if (value.length >= maxTags) {
         return;
       }
+      // If a suggestion is selected, use it
       if (selectedIndex >= 0 && suggestions[selectedIndex]) {
         addTag(suggestions[selectedIndex]);
-      } else if (inputValue.trim()) {
+      } 
+      // If user selected "Create new tag" option (last item when no exact match)
+      else if (selectedIndex === suggestions.length && inputValue.trim()) {
+        addTag(inputValue);
+      }
+      // Otherwise, create a new tag from input
+      else if (inputValue.trim()) {
         addTag(inputValue);
       }
     } else if (e.key === 'Backspace' && !inputValue && value.length > 0) {
       removeTag(value[value.length - 1]);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+      // Include the "Create new tag" option in navigation
+      const maxIndex = inputValue.trim() && !suggestions.includes(inputValue.trim().toLowerCase()) 
+        ? suggestions.length 
+        : suggestions.length - 1;
+      setSelectedIndex((prev) => Math.min(prev + 1, maxIndex));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex((prev) => Math.max(prev - 1, -1));
@@ -119,8 +136,8 @@ export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            // Show suggestions if there are any when input is focused
-            if (suggestions.length > 0 && inputValue.trim().length > 0) {
+            // Show suggestions when input is focused and there's text
+            if (inputValue.trim().length > 0) {
               setShowSuggestions(true);
             }
           }}
@@ -138,9 +155,10 @@ export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags
         />
       </div>
 
-      {showSuggestions && suggestions.length > 0 && value.length < maxTags && (
+      {showSuggestions && inputValue.trim() && value.length < maxTags && (
         <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-lg">
           <ul className="py-1">
+            {/* Show existing tag suggestions */}
             {suggestions.map((tag, index) => (
               <li
                 key={tag}
@@ -161,6 +179,34 @@ export function TagInput({ value, onChange, placeholder = 'Add tags...', maxTags
                 {tag}
               </li>
             ))}
+            
+            {/* Show "Create new tag" option if input doesn't match any suggestion */}
+            {inputValue.trim() && !suggestions.includes(inputValue.trim().toLowerCase()) && !value.includes(inputValue.trim().toLowerCase()) && (
+              <>
+                {suggestions.length > 0 && (
+                  <li className="border-t border-border my-1" />
+                )}
+                <li
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                  }}
+                  onClick={() => {
+                    addTag(inputValue);
+                  }}
+                  className={cn(
+                    'cursor-pointer px-3 py-2 text-sm transition-colors flex items-center gap-2',
+                    selectedIndex === suggestions.length
+                      ? 'bg-accent text-accent-foreground'
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  )}
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>
+                    Create new tag: <strong>{inputValue.trim().toLowerCase()}</strong>
+                  </span>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       )}

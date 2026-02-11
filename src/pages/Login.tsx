@@ -67,18 +67,42 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
+    <div className="cat-auth-bg relative min-h-screen overflow-hidden bg-background px-4 py-8">
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float pointer-events-none absolute left-6 top-10 h-12 w-12"
+      />
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float-reverse pointer-events-none absolute bottom-14 right-7 h-14 w-14"
+      />
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float pointer-events-none absolute left-1/2 top-1/3 h-10 w-10 -translate-x-1/2 opacity-10"
+      />
+
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-sm items-center">
+        <div className="w-full space-y-7 rounded-2xl border border-border/80 bg-card/90 p-6 shadow-lg backdrop-blur-sm">
+          <div className="text-center">
           <Link to="/" className="inline-block">
             <h1 className="font-serif text-3xl font-bold text-foreground flex items-center justify-center gap-2">
               Meowwdium
-              <img src="/paws.png" alt="Meowwdium" className="w-8 h-8 inline-block align-middle" />
+              <img
+                src="/paws.png"
+                alt="Meowwdium"
+                className="paw-wiggle inline-block h-8 w-8 align-middle"
+              />
             </h1>
           </Link>
-          <h2 className="mt-6 text-2xl font-semibold text-foreground">Welcome back</h2>
+          <h2 className="mt-6 text-2xl font-semibold text-foreground">Welcome back, hooman</h2>
           <p className="mt-2 text-muted-foreground">
-            Sign in to continue writing and reading
+            Sign in and continue your purr-sonal blogging journey.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground/90">
+            Funny rule: no laser-pointer passwords allowed.
           </p>
         </div>
 
@@ -142,6 +166,7 @@ export default function Login() {
             Create one
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

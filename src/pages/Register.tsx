@@ -61,18 +61,42 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
+    <div className="cat-auth-bg relative min-h-screen overflow-hidden bg-background px-4 py-8">
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float pointer-events-none absolute right-8 top-14 h-12 w-12"
+      />
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float-reverse pointer-events-none absolute bottom-12 left-8 h-14 w-14"
+      />
+      <img
+        src="/paws.png"
+        alt=""
+        className="paw-float pointer-events-none absolute right-1/3 top-1/2 h-10 w-10 opacity-10"
+      />
+
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-sm items-center">
+        <div className="w-full space-y-7 rounded-2xl border border-border/80 bg-card/90 p-6 shadow-lg backdrop-blur-sm">
+          <div className="text-center">
           <Link to="/" className="inline-block">
             <h1 className="font-serif text-3xl font-bold text-foreground flex items-center justify-center gap-2">
               Meowwdium
-              <img src="/paws.png" alt="Meowwdium" className="w-8 h-8 inline-block align-middle" />
+              <img
+                src="/paws.png"
+                alt="Meowwdium"
+                className="paw-wiggle inline-block h-8 w-8 align-middle"
+              />
             </h1>
           </Link>
-          <h2 className="mt-6 text-2xl font-semibold text-foreground">Create an account</h2>
+          <h2 className="mt-6 text-2xl font-semibold text-foreground">Join the Cat Club</h2>
           <p className="mt-2 text-muted-foreground">
-            Start sharing your stories with the world
+            Create your account and start posting paw-some stories.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground/90">
+            Side quest: earn instant respect from neighborhood cats.
           </p>
         </div>
 
@@ -146,6 +170,7 @@ export default function Register() {
             Sign in
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

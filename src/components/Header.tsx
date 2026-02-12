@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PenLine, LogOut, BookOpen } from 'lucide-react';
+import { PenLine, LogOut, BookOpen, User as UserIcon } from 'lucide-react';
 
 export function Header() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -25,11 +25,19 @@ export function Header() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-full bg-primary/10"
+          className="h-9 w-9 rounded-full bg-primary/10 p-0"
         >
-          <span className="font-medium text-primary">
-            {user?.name?.charAt(0).toUpperCase()}
-          </span>
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user?.name || 'Profile'}
+              className="h-full w-full rounded-full object-cover"
+            />
+          ) : (
+            <span className="font-medium text-primary">
+              {user?.name?.charAt(0).toUpperCase()}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-popover">
@@ -42,6 +50,12 @@ export function Header() {
           <Link to="/my-blogs" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             My Blogs
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/my-profile" className="flex items-center gap-2">
+            <UserIcon className="h-4 w-4" />
+            My Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

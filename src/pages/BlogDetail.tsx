@@ -40,7 +40,7 @@ export default function BlogDetail() {
     enabled: !!slug && !authLoading,
   });
 
-  const isOwner = isAuthenticated && user && blog && user._id === blog.author.id;
+  const isOwner = isAuthenticated && user && blog && user.id === blog.author.id;
   // Only owners can view draft, pending_approval, or rejected blogs
   const isPrivateStatus = blog && ['draft', 'pending_approval', 'rejected'].includes(blog.status);
   const isDraftAndNotOwner = isPrivateStatus && !isOwner;
@@ -78,6 +78,7 @@ export default function BlogDetail() {
   }
 
   const readTime = calculateReadTime(blog.content);
+  const fallbackAvatar = '/placeholder.svg';
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,7 +130,15 @@ export default function BlogDetail() {
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-y border-border py-4">
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center">
-                <img src={blog.author.avatar || 'https://placehold.co/200'} alt={blog.author.name} className="w-6 h-6 rounded-full" />
+                <img
+                  src={blog.author.avatar || fallbackAvatar}
+                  alt={blog.author.name}
+                  className="h-6 w-6 rounded-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = fallbackAvatar;
+                  }}
+                />
               </div>
               <div>
                 <p className="font-medium text-foreground">{blog.author.name}</p>

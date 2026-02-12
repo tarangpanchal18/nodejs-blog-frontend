@@ -23,14 +23,22 @@ function calculateReadTime(content: string): number {
 
 export function BlogCard({ blog }: BlogCardProps) {
   const readTime = calculateReadTime(blog.content);
-  
+  const fallbackAvatar = '/placeholder.svg';
 
   return (
     <article className="group border-b border-border py-8 first:pt-0 last:border-b-0">
       <Link to={`/blog/${blog.slug}`} className="block">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <img src={blog.author.avatar || 'https://placehold.co/200'} alt={blog.author.name} className="w-6 h-6 rounded-full" />
+            <img
+              src={blog.author.avatar || fallbackAvatar}
+              alt={blog.author.name}
+              className="h-6 w-6 rounded-full object-cover"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = fallbackAvatar;
+              }}
+            />
             <span className="font-medium text-foreground">{blog.author.name}</span>
             <span>·</span>
             <span className="flex items-center gap-1">

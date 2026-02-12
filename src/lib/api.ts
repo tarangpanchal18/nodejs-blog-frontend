@@ -1,5 +1,17 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
+function resolveAssetUrl(assetUrl?: string): string {
+  if (!assetUrl) return '';
+  if (assetUrl.startsWith('http://') || assetUrl.startsWith('https://')) return assetUrl;
+  if (!API_BASE_URL) return assetUrl;
+
+  try {
+    return new URL(assetUrl, API_BASE_URL).toString();
+  } catch {
+    return assetUrl;
+  }
+}
+
 interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -26,6 +38,14 @@ interface BackendResponse<T> {
   pagination?: PaginationInfo;
   errors?: unknown;
   error?: unknown;
+}
+
+interface BackendAuthUser {
+  id?: string;
+  _id?: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
 }
 
 interface BackendBlog {
@@ -55,6 +75,15 @@ interface BackendBlog {
   updatedAt?: string;
 }
 
+function transformAuthUser(user: BackendAuthUser | undefined): UserProfile {
+  return {
+    id: user?.id || user?._id || '',
+    name: user?.name || '',
+    email: user?.email || '',
+    avatar: user?.avatar || '',
+  };
+}
+
 // Transform backend blog object to frontend format
 function transformBlog(backendBlog: BackendBlog): Blog {
   return {
@@ -68,7 +97,7 @@ function transformBlog(backendBlog: BackendBlog): Blog {
     author: {
       id: backendBlog.user_id?._id || backendBlog.user_id?.id || '',
       name: backendBlog.user_id?.name || 'Unknown',
-      avatar: backendBlog.user_id?.avatar || '',
+      avatar: resolveAssetUrl(backendBlog.user_id?.avatar),
     },
     status: backendBlog.status || 'published',
     rejectionReason: backendBlog.rejectionReason,
@@ -83,11 +112,15 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const token = localStorage.getItem('auth_token');
-  
+
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     ...options.headers,
   };
+
+  const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  if (!isFormDataBody) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -205,11 +238,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  user: UserProfile;
 }
 
 export interface ForgotPasswordRequest {
@@ -221,12 +250,34 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 export const authApi = {
-  login: (data: LoginRequest) =>
-    apiRequest<AuthResponse>('/auth/login', {
+  login: async (data: LoginRequest) => {
+    const response = await apiRequest<{
+      token: string;
+      user: BackendAuthUser;
+    }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
-    }),
+    });
+
+    if (response.error) {
+      return { error: response.error };
+    }
+
+    return {
+      data: {
+        token: response.data!.token,
+        user: transformAuthUser(response.data!.user),
+      },
+    };
+  },
 
   register: (data: RegisterRequest) =>
     apiRequest<{ message: string }>('/auth/register', {
@@ -245,6 +296,47 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+};
+
+export interface UpdateProfileRequest {
+  name: string;
+  avatar?: File | null;
+}
+
+export const profileApi = {
+  getMyProfile: async () => {
+    const response = await apiRequest<{ user: BackendAuthUser }>('/auth/me');
+
+    if (response.error) {
+      return { error: response.error };
+    }
+
+    return {
+      data: transformAuthUser(response.data!.user),
+    };
+  },
+
+  updateMyProfile: async (data: UpdateProfileRequest) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+
+    if (data.avatar) {
+      formData.append('avatar', data.avatar);
+    }
+
+    const response = await apiRequest<{ user: BackendAuthUser }>('/auth/me', {
+      method: 'PUT',
+      body: formData,
+    });
+
+    if (response.error) {
+      return { error: response.error };
+    }
+
+    return {
+      data: transformAuthUser(response.data!.user),
+    };
+  },
 };
 
 // Blog API
@@ -507,6 +599,19 @@ export interface ReportCommentRequest {
   reason: 'spam' | 'offensive' | 'harassment' | 'other';
 }
 
+function transformComment(comment: Comment): Comment {
+  return {
+    ...comment,
+    author: {
+      ...comment.author,
+      avatar: comment.author?.avatar ? resolveAssetUrl(comment.author.avatar) : null,
+    },
+    replies: Array.isArray(comment.replies)
+      ? comment.replies.map(transformComment)
+      : [],
+  };
+}
+
 export const commentApi = {
   /**
    * Get all comments for a blog post (nested tree structure)
@@ -564,7 +669,9 @@ export const commentApi = {
 
       return {
         data: {
-          comments: responseData.data || [],
+          comments: Array.isArray(responseData.data)
+            ? responseData.data.map(transformComment)
+            : [],
           pagination: responseData.pagination || {
             page,
             limit,
@@ -593,7 +700,7 @@ export const commentApi = {
     }
 
     return {
-      data: response.data!,
+      data: transformComment(response.data!),
     };
   },
 
@@ -612,7 +719,7 @@ export const commentApi = {
     }
 
     return {
-      data: response.data!,
+      data: transformComment(response.data!),
     };
   },
 

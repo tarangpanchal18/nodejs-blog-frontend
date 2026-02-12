@@ -14,6 +14,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Write from "./pages/Write";
 import MyBlogs from "./pages/MyBlogs";
+import MyProfile from "./pages/MyProfile";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
 
@@ -67,6 +68,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MyBlogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-profile"
+              element={
+                <ProtectedRoute>
+                  <MyProfile />
                 </ProtectedRoute>
               }
             />

@@ -52,6 +52,7 @@ const CommentItem = ({ comment, depth = 0, blogSlug, onReplySuccess }: CommentIt
   const [isReporting, setIsReporting] = useState(false);
   const [reportReason, setReportReason] = useState<'spam' | 'offensive' | 'harassment' | 'other'>('spam');
   const [isDeleting, setIsDeleting] = useState(false);
+  const fallbackAvatar = '/placeholder.svg';
 
   const isOwner = isAuthenticated && user && user.id === comment.author.id;
   const hasReplies = comment.replies && comment.replies.length > 0;
@@ -145,19 +146,15 @@ const CommentItem = ({ comment, depth = 0, blogSlug, onReplySuccess }: CommentIt
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {comment.author.avatar ? (
-                <img
-                  src={comment.author.avatar}
-                  alt={comment.author.name}
-                  className="h-8 w-8 rounded-full shrink-0"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-xs font-medium text-primary">
-                    {comment.author.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              <img
+                src={comment.author.avatar || fallbackAvatar}
+                alt={comment.author.name}
+                className="h-8 w-8 rounded-full shrink-0 object-cover"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = fallbackAvatar;
+                }}
+              />
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-sm truncate">{comment.author.name}</p>
                 <p className="text-xs text-muted-foreground">{formatDate(comment.createdAt)}</p>

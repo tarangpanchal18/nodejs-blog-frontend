@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FloatingCat } from "@/components/FloatingCat";
 import { Bounce, Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Footer } from "@/components/Footer";
 import Home from "./pages/Home";
 import BlogDetail from "./pages/BlogDetail";
 import Login from "./pages/Login";
@@ -40,50 +41,43 @@ const App = () => (
             transition={Slide}
             />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/blog/:slug" element={<BlogDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/about" element={<About />} />
-            <Route
-              path="/write"
-              element={
-                <ProtectedRoute>
-                  <Write />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/write/:slug"
-              element={
-                <ProtectedRoute>
-                  <Write />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-blogs"
-              element={
-                <ProtectedRoute>
-                  <MyBlogs />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-profile"
-              element={
-                <ProtectedRoute>
-                  <MyProfile />
-                </ProtectedRoute>
-              }
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <FloatingCat />
+          <div className="flex flex-col min-h-screen">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/blog/:slug" element={<BlogDetail />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route
+                path="/write"
+                element={
+                  <ProtectedRoute>
+                    <Write />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/write/:slug"
+                element={
+                  <ProtectedRoute>
+                    <Write />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-blogs"
+                element={
+                  <ProtectedRoute>
+                    <MyBlogs />
+                  </ProtectedRoute>
+                }
+              />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Footer />
+          </div>
         </BrowserRouter>
       </TooltipProvider>
       </RateLimitProvider>
